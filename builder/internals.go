@@ -4,7 +4,9 @@ package builder
 // non-contiguous functionality. Please read the comments.
 
 import (
+	"bytes"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -20,6 +22,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/builder/parser"
 	"github.com/docker/docker/cliconfig"
 	"github.com/docker/docker/daemon"
@@ -112,6 +115,7 @@ func (b *Builder) commit(id string, autoCmd *runconfig.Command, comment string) 
 		Author: b.maintainer,
 		Pause:  true,
 		Config: &autoConfig,
+		DockerfileData: b.dockerfileData,
 	}
 
 	// Commit the container
@@ -766,4 +770,28 @@ func (b *Builder) clearTmp() {
 		delete(b.TmpContainers, c)
 		fmt.Fprintf(b.OutStream, "Removing intermediate container %s\n", stringid.TruncateID(c))
 	}
+}
+
+func (b *Builder) getDockerfileData(rwc io.Reader, compress bool) (*types.DockerfileData, error){
+	var sContent string
+
+	dockerfileBuf := bytes.NewBuffer(nil)
+
+	_, err := io.Copy(dockerfileBuf, rwc)
+
+ if err != nil {
+		return nil, err
+	}
+
+ bContent := dockerfileBuf.Bytes();
+
+	if compress {
+		sContent = base64.StdEncoding.EncodeToString(gz(bContent))
+	} else {
+		sContent = string(bContent)
+	}
+
+ dd := &types.DockerfileData{"base64", sContent}
+
+ return dd, nil
 }

@@ -1269,6 +1269,7 @@ func (s *Server) postBuild(version version.Version, w http.ResponseWriter, r *ht
 
 	buildConfig.RemoteURL = r.FormValue("remote")
 	buildConfig.DockerfileName = r.FormValue("dockerfile")
+	buildConfig.IncludeDockerfile = boolValue(r, "includedockerfile")
 	buildConfig.RepoName = r.FormValue("t")
 	buildConfig.SuppressOutput = boolValue(r, "q")
 	buildConfig.NoCache = boolValue(r, "nocache")

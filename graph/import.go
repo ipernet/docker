@@ -57,7 +57,7 @@ func (s *TagStore) Import(src string, repo string, tag string, imageImportConfig
 		archive = progressReader
 	}
 
-	img, err := s.graph.Create(archive, "", "", "Imported from "+src, "", nil, imageImportConfig.ContainerConfig)
+	img, err := s.graph.Create(archive, "", "", "Imported from "+src, "", nil, imageImportConfig.ContainerConfig, nil)
 	if err != nil {
 		return err
 	}

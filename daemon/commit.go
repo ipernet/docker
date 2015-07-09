@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/image"
 	"github.com/docker/docker/runconfig"
 )
@@ -12,6 +13,7 @@ type ContainerCommitConfig struct {
 	Author  string
 	Comment string
 	Config  *runconfig.Config
+	DockerfileData *types.DockerfileData
 }
 
 // Commit creates a new filesystem image from the current state of a container.
@@ -44,7 +46,7 @@ func (daemon *Daemon) Commit(container *Container, c *ContainerCommitConfig) (*i
 		containerConfig = container.Config
 	}
 
-	img, err := daemon.graph.Create(rwTar, containerID, parentImageID, c.Comment, c.Author, containerConfig, c.Config)
+	img, err := daemon.graph.Create(rwTar, containerID, parentImageID, c.Comment, c.Author, containerConfig, c.Config, c.DockerfileData)
 	if err != nil {
 		return nil, err
 	}

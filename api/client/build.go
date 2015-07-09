@@ -52,6 +52,7 @@ func (cli *DockerCli) CmdBuild(args ...string) error {
 	forceRm := cmd.Bool([]string{"-force-rm"}, false, "Always remove intermediate containers")
 	pull := cmd.Bool([]string{"-pull"}, false, "Always attempt to pull a newer version of the image")
 	dockerfileName := cmd.String([]string{"f", "-file"}, "", "Name of the Dockerfile (Default is 'PATH/Dockerfile')")
+	includeDockerfile := cmd.Bool([]string{"-include-dockerfile"}, false, "Include the content of the Dockerfile in the 'Dockerfile' field of the generated image")
 	flMemoryString := cmd.String([]string{"m", "-memory"}, "", "Memory limit")
 	flMemorySwap := cmd.String([]string{"-memory-swap"}, "", "Total memory (memory + swap), '-1' to disable swap")
 	flCPUShares := cmd.Int64([]string{"c", "-cpu-shares"}, 0, "CPU shares (relative weight)")
@@ -264,6 +265,12 @@ func (cli *DockerCli) CmdBuild(args ...string) error {
 
 	if *pull {
 		v.Set("pull", "1")
+	}
+
+	if *includeDockerfile {
+		v.Set("includedockerfile", "1")
+	} else {
+	 v.Set("includedockerfile", "0")
 	}
 
 	v.Set("cpusetcpus", *flCPUSetCpus)

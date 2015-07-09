@@ -17,6 +17,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/distribution/digest"
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/autogen/dockerversion"
 	"github.com/docker/docker/daemon/graphdriver"
 	"github.com/docker/docker/image"
@@ -128,12 +129,13 @@ func (graph *Graph) Get(name string) (*image.Image, error) {
 }
 
 // Create creates a new image and registers it in the graph.
-func (graph *Graph) Create(layerData archive.ArchiveReader, containerID, containerImage, comment, author string, containerConfig, config *runconfig.Config) (*image.Image, error) {
+func (graph *Graph) Create(layerData archive.ArchiveReader, containerID, containerImage, comment, author string, containerConfig, config *runconfig.Config, dockerfileData *types.DockerfileData) (*image.Image, error) {
 	img := &image.Image{
 		ID:            stringid.GenerateRandomID(),
 		Comment:       comment,
 		Created:       time.Now().UTC(),
 		DockerVersion: dockerversion.VERSION,
+		Dockerfile:    dockerfileData,
 		Author:        author,
 		Config:        config,
 		Architecture:  runtime.GOARCH,

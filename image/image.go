@@ -6,23 +6,25 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/runconfig"
 )
 
 var validHex = regexp.MustCompile(`^([a-f0-9]{64})$`)
 
 type Image struct {
-	ID              string            `json:"id"`
-	Parent          string            `json:"parent,omitempty"`
-	Comment         string            `json:"comment,omitempty"`
-	Created         time.Time         `json:"created"`
-	Container       string            `json:"container,omitempty"`
-	ContainerConfig runconfig.Config  `json:"container_config,omitempty"`
-	DockerVersion   string            `json:"docker_version,omitempty"`
-	Author          string            `json:"author,omitempty"`
-	Config          *runconfig.Config `json:"config,omitempty"`
-	Architecture    string            `json:"architecture,omitempty"`
-	OS              string            `json:"os,omitempty"`
+	ID              string                `json:"id"`
+	Parent          string                `json:"parent,omitempty"`
+	Comment         string                `json:"comment,omitempty"`
+	Created         time.Time             `json:"created"`
+	Container       string                `json:"container,omitempty"`
+	ContainerConfig runconfig.Config      `json:"container_config,omitempty"`
+	DockerVersion   string                `json:"docker_version,omitempty"`
+	Dockerfile      *types.DockerfileData `json:"dockerfile,omitempty"`
+	Author          string                `json:"author,omitempty"`
+	Config          *runconfig.Config     `json:"config,omitempty"`
+	Architecture    string                `json:"architecture,omitempty"`
+	OS              string                `json:"os,omitempty"`
 	Size            int64
 }
 

@@ -37,6 +37,7 @@ func (s *TagStore) Lookup(name string) (*types.ImageInspect, error) {
 		Container:       image.Container,
 		ContainerConfig: &image.ContainerConfig,
 		DockerVersion:   image.DockerVersion,
+		Dockerfile:      image.Dockerfile,
 		Author:          image.Author,
 		Config:          image.Config,
 		Architecture:    image.Architecture,

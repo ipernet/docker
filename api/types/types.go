@@ -80,6 +80,11 @@ type GraphDriverData struct {
 	Data map[string]string
 }
 
+type DockerfileData struct {
+	Format string
+	Content string
+}
+
 // GET "/images/{name:.*}/json"
 type ImageInspect struct {
 	Id              string
@@ -89,6 +94,7 @@ type ImageInspect struct {
 	Container       string
 	ContainerConfig *runconfig.Config
 	DockerVersion   string
+	Dockerfile      *DockerfileData
 	Author          string
 	Config          *runconfig.Config
 	Architecture    string

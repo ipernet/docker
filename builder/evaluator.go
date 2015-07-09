@@ -28,6 +28,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api"
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/builder/command"
 	"github.com/docker/docker/builder/parser"
 	"github.com/docker/docker/cliconfig"
@@ -110,15 +111,17 @@ type Builder struct {
 	// both of these are controlled by the Remove and ForceRemove options in BuildOpts
 	TmpContainers map[string]struct{} // a map of containers used for removes
 
-	dockerfileName string        // name of Dockerfile
-	dockerfile     *parser.Node  // the syntax tree of the dockerfile
-	image          string        // image name for commit processing
-	maintainer     string        // maintainer name. could probably be removed.
-	cmdSet         bool          // indicates is CMD was set in current Dockerfile
-	BuilderFlags   *BuilderFlags // current cmd's BuilderFlags - temporary
-	context        tarsum.TarSum // the context is a tarball that is uploaded by the client
-	contextPath    string        // the path of the temporary directory the local context is unpacked to (server side)
-	noBaseImage    bool          // indicates that this build does not start from any base image, but is being built from an empty file system.
+	dockerfileName    string        // name of Dockerfile
+	includeDockerfile bool          // whether to save the Dockerfile in the "Dockerfile" field of the generated image
+	dockerfile       *parser.Node   // the syntax tree of the dockerfile
+	dockerfileData   *types.DockerfileData // the content of the dockerfile
+	image             string        // image name for commit processing
+	maintainer        string        // maintainer name. could probably be removed.
+	cmdSet            bool          // indicates is CMD was set in current Dockerfile
+	BuilderFlags      *BuilderFlags // current cmd's BuilderFlags - temporary
+	context           tarsum.TarSum // the context is a tarball that is uploaded by the client
+	contextPath       string        // the path of the temporary directory the local context is unpacked to (server side)
+	noBaseImage       bool          // indicates that this build does not start from any base image, but is being built from an empty file system.
 
 	// Set resource restrictions for build containers
 	cpuSetCpus   string
@@ -232,11 +235,27 @@ func (b *Builder) readDockerfile() error {
 	}
 
 	b.dockerfile, err = parser.Parse(f)
-	f.Close()
 
 	if err != nil {
 		return err
 	}
+
+	_, err = f.Seek(0, 0)
+
+	if err != nil {
+		return err
+	}
+
+	// Dockerfile content
+	if b.includeDockerfile {
+		b.dockerfileData, err = b.getDockerfileData(f, true)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	f.Close()
 
 	// After the Dockerfile has been parsed, we need to check the .dockerignore
 	// file for either "Dockerfile" or ".dockerignore", and if either are

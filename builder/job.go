@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/docker/docker/api"
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/builder/parser"
 	"github.com/docker/docker/cliconfig"
 	"github.com/docker/docker/daemon"
@@ -45,9 +46,10 @@ var validCommitCommands = map[string]bool{
 }
 
 type Config struct {
-	DockerfileName string
-	RemoteURL      string
-	RepoName       string
+	DockerfileName    string
+	IncludeDockerfile bool
+	RemoteURL         string
+	RepoName          string
 	SuppressOutput bool
 	NoCache        bool
 	Remove         bool
@@ -183,24 +185,25 @@ func Build(d *daemon.Daemon, buildConfig *Config) error {
 			Writer:          buildConfig.Stdout,
 			StreamFormatter: sf,
 		},
-		Verbose:         !buildConfig.SuppressOutput,
-		UtilizeCache:    !buildConfig.NoCache,
-		Remove:          buildConfig.Remove,
-		ForceRemove:     buildConfig.ForceRemove,
-		Pull:            buildConfig.Pull,
-		OutOld:          buildConfig.Stdout,
-		StreamFormatter: sf,
-		AuthConfigs:     buildConfig.AuthConfigs,
-		dockerfileName:  buildConfig.DockerfileName,
-		cpuShares:       buildConfig.CpuShares,
-		cpuPeriod:       buildConfig.CpuPeriod,
-		cpuQuota:        buildConfig.CpuQuota,
-		cpuSetCpus:      buildConfig.CpuSetCpus,
-		cpuSetMems:      buildConfig.CpuSetMems,
-		cgroupParent:    buildConfig.CgroupParent,
-		memory:          buildConfig.Memory,
-		memorySwap:      buildConfig.MemorySwap,
-		cancelled:       buildConfig.WaitCancelled(),
+		Verbose:            !buildConfig.SuppressOutput,
+		UtilizeCache:       !buildConfig.NoCache,
+		Remove:             buildConfig.Remove,
+		ForceRemove:        buildConfig.ForceRemove,
+		Pull:               buildConfig.Pull,
+		OutOld:             buildConfig.Stdout,
+		StreamFormatter:    sf,
+		AuthConfigs:        buildConfig.AuthConfigs,
+		dockerfileName:     buildConfig.DockerfileName,
+		includeDockerfile:  buildConfig.IncludeDockerfile,
+		cpuShares:          buildConfig.CpuShares,
+		cpuPeriod:          buildConfig.CpuPeriod,
+		cpuQuota:           buildConfig.CpuQuota,
+		cpuSetCpus:         buildConfig.CpuSetCpus,
+		cpuSetMems:         buildConfig.CpuSetMems,
+		cgroupParent:       buildConfig.CgroupParent,
+		memory:             buildConfig.Memory,
+		memorySwap:         buildConfig.MemorySwap,
+		cancelled:          buildConfig.WaitCancelled(),
 	}
 
 	id, err := builder.Run(context)
@@ -252,6 +255,7 @@ type BuilderCommitConfig struct {
 	Comment string
 	Changes []string
 	Config  *runconfig.Config
+	DockerfileData *types.DockerfileData
 }
 
 func Commit(name string, d *daemon.Daemon, c *BuilderCommitConfig) (string, error) {
@@ -280,6 +284,7 @@ func Commit(name string, d *daemon.Daemon, c *BuilderCommitConfig) (string, erro
 		Author:  c.Author,
 		Comment: c.Comment,
 		Config:  newConfig,
+		DockerfileData: c.DockerfileData,
 	}
 
 	img, err := d.Commit(container, commitCfg)
